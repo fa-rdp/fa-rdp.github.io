@@ -80,10 +80,10 @@
       margin-bottom: 1.5rem;
     }
     .subsection-heading {
-      font-size: 1.15rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: #283593;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.9rem;
     }
 
     /* Sections */
@@ -92,10 +92,13 @@
     /* Narrow, centered content column (like the ImplicitRDP / Nerfies template) */
     .hero-paper > .container,
     .paper-section > .container { max-width: 980px; margin-left: auto; margin-right: auto; }
-    /* Body text: full-width within the narrow container, justified */
-    .body-text { color: #444; text-align: justify; margin-bottom: 1.2rem; }
-    .body-text.lead { margin-bottom: 0.8rem; }
-    .body-list { color: #444; margin: 0 0 1.5rem 1.2rem; line-height: 1.8; }
+    /* Body text: full-width within the narrow container */
+    .body-text { color: #333; text-align: left; margin-bottom: 1.2rem; font-size: 1.12rem; line-height: 1.85; }
+    .body-text.lead { margin-bottom: 0.6rem; }
+    .body-list { color: #333; margin: 0 0 1.5rem 1.4rem; line-height: 1.85; font-size: 1.12rem; }
+    .body-list li { margin-bottom: 0.4rem; }
+    /* Leading question on its own line */
+    .body-question { color: #222; font-weight: 700; font-size: 1.22rem; line-height: 1.5; margin-bottom: 0.7rem; }
     /* Centered figure with controlled width */
     .fig-center { text-align: center; margin: 0.5rem 0 0; }
     .fig-center img { display: inline-block; border-radius: 8px; }
@@ -258,8 +261,8 @@
       border-left: 4px solid var(--navy);
       border-radius: 4px;
       padding: 1.5rem 2rem;
-      font-size: 1rem;
-      line-height: 1.8;
+      font-size: 1.1rem;
+      line-height: 1.85;
       color: #333;
     }
 
@@ -613,12 +616,12 @@
     <!-- Multimodality preservation -->
     <div style="margin-top:3rem;">
       <h3 class="subsection-heading">Q2 · Pre-Contact Multimodality Preservation</h3>
-      <p class="body-text">
-        <strong>Does frequency adaptation keep the pre-contact modes?</strong> On Box Flipping there are
-        <strong>four valid ways</strong> to approach the box. Over repeated rollouts, <strong>FA-RDP uses all four</strong>
-        (matching the full multi-step policy), while always-high-frequency one-step <strong>collapses to a single mode</strong>.
-        Low-frequency sampling before contact is what preserves diversity.
-      </p>
+      <p class="body-question">Does frequency adaptation keep the pre-contact modes?</p>
+      <ul class="body-list">
+        <li>On Box Flipping there are <strong>four valid ways</strong> to approach the box.</li>
+        <li>Over repeated rollouts, <strong>FA-RDP uses all four</strong> (matching the full multi-step policy), while always-high-frequency one-step <strong>collapses to a single mode</strong>.</li>
+        <li>Low-frequency sampling before contact is what <strong>preserves diversity</strong>.</li>
+      </ul>
       <div class="fig-center" style="margin-bottom:1.5rem;">
         <img src="figs/multimodal_preservation/pillows-1.png" style="width:72%;" alt="Multimodal Preservation">
         <p class="fig-caption">FA-RDP covers all four approach modes; the high-frequency-only policy collapses to one.</p>
@@ -656,12 +659,12 @@
 <section class="paper-section" id="curves">
   <div class="container">
     <h2 class="section-heading">Q3 · Indicator Accuracy &amp; Force Curves</h2>
-    <p class="body-text">
-      <strong>Does the indicator switch at the right moment?</strong> Plotted against contact force, the indicator
-      <strong>stays low during approach</strong> and <strong>rises sharply on contact</strong> — so the policy samples
-      low-frequency while approaching and one-step high-frequency during contact. The learned switch raises average
-      success from <strong>61.7% → 81.7%</strong>.
-    </p>
+    <p class="body-question">Does the indicator switch at the right moment?</p>
+    <ul class="body-list">
+      <li>Plotted against contact force, the indicator <strong>stays low during approach</strong> and <strong>rises sharply on contact</strong>.</li>
+      <li>So the policy samples low-frequency while approaching, and one-step high-frequency during contact.</li>
+      <li>The learned switch raises average success from <strong>61.7% → 81.7%</strong>.</li>
+    </ul>
     <div class="fig-center">
       <img src="figs/confidence_force_curve/confidence_force_curve-1.png" style="width:75%;" alt="Confidence and Force Curves">
       <p class="fig-caption">
@@ -703,9 +706,9 @@
 <section class="paper-section alt-bg" id="distillation">
   <div class="container">
     <h2 class="section-heading">Q4 · Distillation Method Comparison</h2>
+    <p class="body-question">Does MCD give better one-step prediction than other distillation objectives?</p>
     <p class="body-text lead">
-      <strong>Does MCD give better one-step prediction than other distillation objectives?</strong> All methods run
-      high-frequency with selection off, isolating the distillation choice:
+      All methods run high-frequency with selection off, isolating the distillation choice:
     </p>
     <ul class="body-list">
       <li><strong>MeanFlow / Consistency</strong> must predict noise-like quantities, unstable for robot actions → <strong>1.7%</strong>.</li>
