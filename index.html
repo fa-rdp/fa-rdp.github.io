@@ -95,7 +95,7 @@
     /* Body text: full-width within the narrow container */
     .body-text { color: #333; text-align: left; margin-bottom: 1.2rem; font-size: 1.12rem; line-height: 1.85; }
     .body-text.lead { margin-bottom: 0.6rem; }
-    .body-list { color: #333; margin: 0 0 1.5rem 1.4rem; line-height: 1.85; font-size: 1.12rem; }
+    .body-list { color: #333; margin: 0 0 1.5rem 0; padding-left: 1.35rem; line-height: 1.85; font-size: 1.12rem; }
     .body-list li { margin-bottom: 0.4rem; }
     /* Leading question on its own line */
     .body-question { color: #222; font-weight: 700; font-size: 1.22rem; line-height: 1.5; margin-bottom: 0.7rem; }
@@ -378,7 +378,6 @@
       trajectories are valid, so the policy should keep <strong>diverse action modes</strong>; <strong>after contact</strong>,
       success depends on <strong>reacting quickly to force feedback</strong>. A single fixed inference frequency forces a
       compromise — low frequency preserves modes but reacts slowly, high frequency reacts fast but collapses them.
-      <br><br>
       We present <strong>FA-RDP</strong>, a <em>frequency-adaptive reactive diffusion policy</em>. A shared
       <strong>multi-frequency visual-force Transformer</strong> predicts action chunks at both frequencies, and a learned
       <strong>multimodality indicator</strong> switches from multi-step low-frequency sampling before contact to one-step
@@ -428,7 +427,19 @@
     <div class="box" style="margin-bottom:2rem;">
       <h3 class="subsection-heading">1 · Multi-Frequency Visual-Force Transformer</h3>
       <div class="content">
-        <p><strong>One shared backbone</strong> serves both frequencies. <strong>Frequency-adaptive positional encoding</strong> picks dense temporal positions for high-frequency chunks and sparse ones for low-frequency chunks — no extra tokens. A <strong>causal action-force mask</strong> blocks future-contact leakage.</p>
+        <p>
+          A single Transformer backbone serves <strong>both the low- and high-frequency regimes</strong>, so visual and force
+          information stay coupled end-to-end instead of being split across a hierarchy with a lossy latent interface. The key
+          is a <strong>frequency-adaptive positional encoding</strong>: the same weights place action queries on one shared
+          temporal grid, sampling <em>dense</em> positions when a high-frequency chunk is needed and <em>sparse</em> positions
+          when a low-frequency chunk suffices — the two modes reuse identical parameters and add no extra tokens.
+        </p>
+        <p>
+          Visual tokens carry the slow global context while force tokens stream in at high rate, and a
+          <strong>causal action-force mask</strong> lets each action attend only to the force feedback available up to its own
+          timestep, blocking future-contact leakage during training. As a result, one network predicts coherent action chunks
+          at either frequency without retraining or a separate head per rate.
+        </p>
       </div>
       <div class="fig-center">
         <img src="figs/multi_freq_transformer/method-1.png" style="width:70%;" alt="Multi-Frequency Transformer">
@@ -440,7 +451,19 @@
     <div class="box" style="margin-bottom:2rem;">
       <h3 class="subsection-heading">2 · Multimodality-Based Frequency Selection</h3>
       <div class="content">
-        <p>A lightweight <strong>indicator head</strong> reads the visual tokens and outputs a scalar confidence. <strong>Low confidence</strong> (pre-contact, many modes) → multi-step low-frequency sampling; <strong>high confidence</strong> (post-contact) → one-step high-frequency sampling.</p>
+        <p>
+          A lightweight <strong>indicator head</strong> reads the visual tokens and outputs a scalar that estimates how
+          multimodal the current situation is. <strong>Before contact</strong>, many approach trajectories are equally valid,
+          so the indicator stays <strong>low</strong> and FA-RDP runs <strong>multi-step low-frequency sampling</strong>, which
+          preserves the full diffusion distribution and keeps every valid mode alive.
+        </p>
+        <p>
+          Once contact begins, force and geometry collapse the options to essentially one correct response; the indicator
+          rises <strong>high</strong> and the policy switches to <strong>one-step high-frequency sampling</strong> for fast,
+          closed-loop force reaction. Because this switch is <strong>learned from data</strong> rather than fixed by a hand-tuned
+          timer, it fires right at the contact boundary and adapts per rollout — recovering both multimodality and reactivity
+          within a single episode.
+        </p>
       </div>
     </div>
 
@@ -448,7 +471,18 @@
     <div class="box">
       <h3 class="subsection-heading">3 · Manifold Consistency Distillation (MCD)</h3>
       <div class="content">
-        <p>Distilling <strong>noise-like targets is unstable</strong> for robot actions. MCD instead has the student predict action chunks directly on the <strong>robot action manifold</strong>, keeping DDPM residual supervision while producing smooth, valid outputs — enabling <strong>reliable one-step inference</strong>.</p>
+        <p>
+          One-step distillation is what makes high-frequency inference affordable, but standard objectives distill toward
+          <strong>noise-like targets</strong> (such as a velocity or score field). These quantities are high-variance and hard
+          to regress for robot actions, and small errors compound into jittery, physically invalid trajectories.
+        </p>
+        <p>
+          <strong>MCD</strong> instead trains the student to predict action chunks <strong>directly on the robot action
+          manifold</strong>: the target is a clean, executable action rather than a noise residual, so the one-step output
+          stays smooth and valid. It still keeps the <strong>DDPM residual supervision</strong> from the multi-step teacher, so
+          the distilled policy inherits the teacher's accuracy while collapsing the sampling chain to a single step — which is
+          what lets the high-frequency branch react in real time without the usual quality drop of one-step samplers.
+        </p>
       </div>
       <div class="fig-center">
         <img src="figs/mcd_distillation/mcd-1.png" style="width:70%;" alt="MCD Distillation">
@@ -470,7 +504,7 @@
     <!-- Main results -->
     <h3 class="subsection-heading">Q1 · Comparison with Baselines</h3>
     <p class="body-text lead">
-      FA-RDP vs. four baselines on all three tasks (20 trials each):
+      We evaluate FA-RDP on three contact-rich tasks — Box Flipping, Switch Toggling, and Button Pressing — against four baselines: plain Diffusion Policy (DP), Reactive Diffusion Policy (RDP), ImplicitRDP, and a force-conditioned Regression Policy. Each method runs 20 rollouts per task, and we report the per-task success count and the overall average:
     </p>
     <ul class="body-list">
       <li><strong>FA-RDP wins every task</strong>, reaching <strong>81.7%</strong> average — ~30 points above the best baseline, ImplicitRDP (51.7%).</li>
